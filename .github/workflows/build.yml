@@ -1,11 +1,11 @@
-name: Build TWRP (SM-A145F)
+name: Build TWRP (SM-A135F)
 
 on:
   workflow_dispatch:
     inputs:
       kernel_version:
         description: langsdorffkernel release tag
-        default: "3.8.4"
+        default: "4.0.1"
         required: true
       kernel_variant:
         description: Kernel variant (SELinux mode is hardcoded per variant; recovery needs permissive)
@@ -27,17 +27,17 @@ permissions:
   actions: write
 
 concurrency:
-  group: twrp-a14-${{ github.ref }}
+  group: twrp-a13-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   MANIFEST_URL: https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git
   MANIFEST_BRANCH: twrp-12.1
-  DEVICE_PATH: device/samsung/a14
-  DEVICE_NAME: a14
-  LUNCH_TARGET: twrp_a14-eng
-  KERNEL_REPO: clangsdorff/langsdorffkernel
-  KERNEL_VERSION: ${{ inputs.kernel_version || '3.8.4' }}
+  DEVICE_PATH: device/samsung/a13
+  DEVICE_NAME: a13
+  LUNCH_TARGET: twrp_a13-eng
+  KERNEL_REPO: clangsdorff/langsdorffkernel-a13
+  KERNEL_VERSION: ${{ inputs.kernel_version || '4.0.1' }}
   KERNEL_VARIANT: ${{ inputs.kernel_variant || 'p' }}
   # Fixed path: ccache command lines and the cached .repo depend on it
   WORKDIR: /mnt/twrp
@@ -46,7 +46,7 @@ env:
   CCACHE_DIR: /tmp/ccache
   KERNEL_DIR: /mnt/langsdorff
   CCACHE_MAXSIZE: 3G
-  CCACHE_KEY_PREFIX: ccache-twrp-12.1-a14-
+  CCACHE_KEY_PREFIX: ccache-twrp-12.1-a13-
   SOURCE_KEY_PREFIX: source-twrp-12.1-
 
 jobs:
@@ -151,14 +151,14 @@ jobs:
       - name: Download langsdorffkernel
         run: |
           set -euo pipefail
-          ASSET="langsdorff@${KERNEL_VERSION}${KERNEL_VARIANT}_a14.tar"
+          ASSET="langsdorff@a13-${KERNEL_VERSION}${KERNEL_VARIANT}.tar"
           URL="https://github.com/${KERNEL_REPO}/releases/download/${KERNEL_VERSION}/${ASSET//@/%40}"
           mkdir -p "$KERNEL_DIR/tmp"
           cd "$KERNEL_DIR"
           echo "Downloading $ASSET"
           curl -fL --retry 3 -o tmp/kernel.tar "$URL"
           tar -xf tmp/kernel.tar -C tmp
-          for img in boot vendor_boot vbmeta; do
+          for img in boot dtbo; do
             [ -f "tmp/$img.img.lz4" ] || { echo "::error::$img.img.lz4 not found in $ASSET"; exit 1; }
             lz4 -d -f -q "tmp/$img.img.lz4" "$img.img"
           done
@@ -174,7 +174,7 @@ jobs:
           strings "$KERNEL_DIR/boot.img" | grep -m1 "Linux version" || true
           python3 "$DEVICE_PATH/scripts/prepare_kernel.py" \
             --boot "$KERNEL_DIR/boot.img" \
-            --vendor-boot "$KERNEL_DIR/vendor_boot.img" \
+            --dtbo "$KERNEL_DIR/dtbo.img" \
             --device-dir "$DEVICE_PATH"
 
       - name: Patch recovery sources
@@ -239,11 +239,13 @@ jobs:
         run: |
           set -euo pipefail
           VERSION=$(grep -m1 -oP 'TW_MAIN_VERSION_STR\s+"\K[^"]+' "$WORKDIR/bootable/recovery/variables.h")
-          NAME="twrp-${VERSION}-a14-langsdorff${KERNEL_VERSION}${KERNEL_VARIANT}-$(date -u +%Y%m%d)"
+          NAME="twrp-${VERSION}-a13-langsdorff${KERNEL_VERSION}${KERNEL_VARIANT}-$(date -u +%Y%m%d)"
           mkdir -p "$WORKDIR/dist"
           cp recovery.img "$WORKDIR/dist/$NAME.img"
-          # Odin: a plain tar with recovery.img and the kernel release's disabled vbmeta, md5 appended (.tar.md5)
-          tar -H ustar -cf "$WORKDIR/dist/$NAME.tar" recovery.img -C "$KERNEL_DIR" vbmeta.img
+          # Odin: a plain tar with recovery.img, md5 appended (.tar.md5)
+          VBMETA_ARG=""
+          [ -f "$KERNEL_DIR/vbmeta.img" ] && VBMETA_ARG="-C $KERNEL_DIR vbmeta.img"
+          tar -H ustar -cf "$WORKDIR/dist/$NAME.tar" recovery.img ${VBMETA_ARG}
           ( cd "$WORKDIR/dist" && md5sum -t "$NAME.tar" >> "$NAME.tar" && mv "$NAME.tar" "$NAME.tar.md5" )
           ( cd "$WORKDIR/dist" && sha256sum * > SHA256SUMS )
           ls -la "$WORKDIR/dist"
