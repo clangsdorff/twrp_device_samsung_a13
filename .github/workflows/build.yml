@@ -82,7 +82,7 @@ jobs:
             bc bison build-essential ccache curl flex g++-multilib gcc-multilib git git-lfs \
             gnupg gperf imagemagick lib32readline-dev lib32z1-dev libelf-dev liblz4-tool lz4 \
             libncurses5 libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync \
-            schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3
+            schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3 zstd
           mkdir -p ~/bin
           curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo -o ~/bin/repo
           chmod a+x ~/bin/repo
@@ -194,6 +194,14 @@ jobs:
             fi
           done
 
+      - name: Configure zstd ramdisk compression
+        working-directory: ${{ env.WORKDIR }}/build/make
+        run: |
+          set -euo pipefail
+          # A13 recovery partition is only ~53 MB. zstd -19 fits kernel + ramdisk comfortably.
+          sed -i 's|\$(LZ4) -l -12 --favor-decSpeed|zstd -19 -T0|g' core/Makefile
+          grep -n "zstd -19 -T0" core/Makefile
+
       # ---------------------------------------------------------------- build
       - name: Build recovery image
         working-directory: ${{ env.WORKDIR }}
@@ -284,7 +292,7 @@ jobs:
           done
           echo "::notice title=Gofile::$PAGE"
           {
-            echo "### TWRP ${{ steps.package.outputs.version }} — SM-A145F"
+            echo "### TWRP ${{ steps.package.outputs.version }} — SM-A135F"
             echo "Kernel: langsdorffkernel \`${KERNEL_VERSION}${KERNEL_VARIANT}\`"
             echo
             echo "**Download:** $PAGE"

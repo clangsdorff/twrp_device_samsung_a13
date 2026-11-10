@@ -31,6 +31,28 @@ LZ4_LEGACY_MAGIC = b"\x02\x21\x4c\x18"
 GZIP_MAGIC = b"\x1f\x8b"
 ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 
+# Modules not needed in recovery that blow past the ~53 MB partition size.
+# Camera, GPU 3D, video codecs, Wi-Fi, BT, audio, cellular/GPS, PC gamepads/drawing tablets, debug dumps.
+RECOVERY_MODULE_EXCLUDE_PREFIXES = (
+    "fimc-is", "is-", "camerapp",
+    "mali_kbase",
+    "exynos_mfc", "smfc", "gdc", "votf", "scaler",
+    "scsc_", "fm_s610",
+    "snd-soc-", "sec_audio_",
+    "cpif", "dev_ril_bridge", "gnss", "shm_ipc", "cdc-wdm", "cdc_mbim",
+    "sensor_core", "nanohub", "shub", "nfc_sec",
+    "hid-", "acecad", "aiptek", "hanwang", "kbtab",
+    "debug-snapshot-", "sec_debug_", "dropdump", "exynos-bcm_dbg",
+    "exynos-flexpmu-dbg", "exynos-pd-dbg", "exynos-coresight", "exynos-debug-test", "xperf",
+)
+
+
+def should_exclude_module(filename):
+    for prefix in RECOVERY_MODULE_EXCLUDE_PREFIXES:
+        if filename == prefix or filename.startswith(prefix):
+            return True
+    return False
+
 
 def align(value, page_size):
     return (value + page_size - 1) // page_size * page_size
@@ -159,6 +181,9 @@ def main():
             # A13 ramdisk has lib/modules/* and lib/firmware/*
             if path.startswith("lib/modules/") or path.startswith("first_stage_ramdisk/lib/modules/"):
                 rel_path = path if path.startswith("lib/modules/") else path[len("first_stage_ramdisk/"):]
+                filename = os.path.basename(rel_path)
+                if filename.endswith(".ko") and should_exclude_module(filename):
+                    continue
                 write_file(os.path.join(root, rel_path), content)
                 modules += rel_path.endswith(".ko")
             elif path.startswith("lib/firmware/"):
@@ -169,7 +194,11 @@ def main():
 
     load = os.path.join(modules_dir, "modules.load")
     if modules and os.path.exists(load):
-        shutil.copyfile(load, os.path.join(modules_dir, "modules.load.recovery"))
+        with open(load, "r") as f:
+            lines = [line.strip() for line in f if line.strip()]
+        filtered = [l for l in lines if not should_exclude_module(l)]
+        with open(os.path.join(modules_dir, "modules.load.recovery"), "w") as f:
+            f.write("\n".join(filtered) + "\n")
     print(f"modules: {modules}, firmware files: {firmware}")
 
 

@@ -71,7 +71,7 @@ BOARD_PREBUILT_RECOVERY_DTBOIMAGE := $(DEVICE_PATH)/prebuilt/dtbo.img
 # prepare_kernel.py. Appended after the build system's own version args, so these win.
 include $(DEVICE_PATH)/prebuilt/bootimg_version.mk
 
-# Ramdisk (stock recovery ramdisk is lz4 legacy too)
+# Ramdisk (stock recovery ramdisk is lz4 legacy; CI patches the rule to zstd -19 to fit partition)
 BOARD_RAMDISK_USE_LZ4 := true
 
 # Partitions
@@ -125,7 +125,7 @@ TARGET_SCREEN_DENSITY := 450
 # TWRP
 TW_THEME := portrait_hdpi
 TW_DEVICE_VERSION := langsdorff
-TW_EXTRA_LANGUAGES := true
+TW_EXTRA_LANGUAGES := false
 TW_DEFAULT_LANGUAGE := en
 TW_BRIGHTNESS_PATH := "/sys/class/backlight/panel/brightness"
 TW_MAX_BRIGHTNESS := 255
@@ -139,12 +139,9 @@ TW_NO_REBOOT_BOOTLOADER := true
 TW_USE_TOOLBOX := true
 TW_EXCLUDE_TWRPAPP := true
 TW_EXCLUDE_APEX := true
-TW_INCLUDE_NTFS_3G := true
 TW_NO_EXFAT_FUSE := true
-TW_INCLUDE_FB2PNG := true
 TW_INCLUDE_RESETPROP := true
 TW_INCLUDE_LIBRESETPROP := true
-TW_INCLUDE_REPACKTOOLS := true
 TW_INCLUDE_LPTOOLS := true
 # configfs + FunctionFS MTP, see recovery/root/init.recovery.usb.rc
 TW_EXCLUDE_DEFAULT_USB_INIT := true
