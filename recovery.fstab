@@ -1,4 +1,4 @@
-# Android fstab file (TWRP, Galaxy A14 SM-A145F / s5e3830)
+# Android fstab file (TWRP, Galaxy A13 SM-A135F / s5e3830)
 # Display names, backup and storage flags live in recovery/root/system/etc/twrp.flags
 # fstab_crypto.sh adds the FBE flags to /data at boot when the firmware has a metadata key
 #<src>                         <mnt_point>     <type>  <mnt_flags and options>                                                                                           <fs_mgr_flags>
@@ -8,8 +8,6 @@ system                         /system_root    erofs   ro                       
 vendor                         /vendor         erofs   ro                                                                                                                wait,logical
 product                        /product        erofs   ro                                                                                                                wait,logical
 odm                            /odm            erofs   ro                                                                                                                wait,logical
-system_dlkm                    /system_dlkm    erofs   ro                                                                                                                wait,logical
-vendor_dlkm                    /vendor_dlkm    erofs   ro                                                                                                                wait,logical
 
 /dev/block/by-name/metadata    /metadata       ext4    noatime,nosuid,nodev,noauto_da_alloc,discard,journal_checksum,data=ordered,errors=panic                           wait,check,formattable
 /dev/block/by-name/userdata    /data           f2fs    noatime,nosuid,nodev,discard,usrquota,grpquota,fsync_mode=nobarrier,reserve_root=32768,resgid=5678               wait,check,quota,reservedsize=128M,checkpoint=fs,fscompress,length=-20480
@@ -21,8 +19,6 @@ vendor_dlkm                    /vendor_dlkm    erofs   ro                       
 
 /dev/block/by-name/boot          /boot           emmc  defaults  defaults
 /dev/block/by-name/recovery      /recovery       emmc  defaults  defaults
-/dev/block/by-name/init_boot     /init_boot      emmc  defaults  defaults
-/dev/block/by-name/vendor_boot   /vendor_boot    emmc  defaults  defaults
 /dev/block/by-name/dtbo          /dtbo           emmc  defaults  defaults
 /dev/block/by-name/vbmeta        /vbmeta         emmc  defaults  defaults
 /dev/block/by-name/vbmeta_system /vbmeta_system  emmc  defaults  defaults

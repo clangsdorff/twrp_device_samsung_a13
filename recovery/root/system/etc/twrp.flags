@@ -3,8 +3,6 @@
 /vendor            erofs     vendor                                                   flags=display="Vendor";logical;backup=0;flashimg=1
 /product           erofs     product                                                  flags=display="Product";logical;backup=0;flashimg=1
 /odm               erofs     odm                                                      flags=display="ODM";logical;backup=0;flashimg=1
-/system_dlkm       erofs     system_dlkm                                              flags=display="System DLKM";logical;backup=0;flashimg=1
-/vendor_dlkm       erofs     vendor_dlkm                                              flags=display="Vendor DLKM";logical;backup=0;flashimg=1
 
 /metadata          ext4      /dev/block/by-name/metadata                              flags=display="Metadata";backup=1
 /efs               ext4      /dev/block/by-name/efs                                   flags=display="EFS";backup=1
@@ -14,8 +12,6 @@
 
 /boot              emmc      /dev/block/by-name/boot                                  flags=display="Boot";backup=1;flashimg=1
 /recovery          emmc      /dev/block/by-name/recovery                              flags=display="Recovery";backup=1;flashimg=1
-/init_boot         emmc      /dev/block/by-name/init_boot                             flags=display="Init Boot";backup=1;flashimg=1
-/vendor_boot       emmc      /dev/block/by-name/vendor_boot                           flags=display="Vendor Boot";backup=1;flashimg=1
 /dtbo              emmc      /dev/block/by-name/dtbo                                  flags=display="DTBO";backup=1;flashimg=1
 /vbmeta            emmc      /dev/block/by-name/vbmeta                                flags=display="VBMeta";backup=1;flashimg=1
 /vbmeta_system     emmc      /dev/block/by-name/vbmeta_system                         flags=display="VBMeta System";backup=1;flashimg=1

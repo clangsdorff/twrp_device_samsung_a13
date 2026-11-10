@@ -12,12 +12,12 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
 $(call inherit-product, vendor/twrp/config/common.mk)
 
 # Inherit from device
-$(call inherit-product, device/samsung/a14/device.mk)
+$(call inherit-product, device/samsung/a13/device.mk)
 
-PRODUCT_DEVICE := a14
-PRODUCT_NAME := twrp_a14
+PRODUCT_DEVICE := a13
+PRODUCT_NAME := twrp_a13
 PRODUCT_BRAND := samsung
-PRODUCT_MODEL := SM-A145F
+PRODUCT_MODEL := SM-A135F
 PRODUCT_MANUFACTURER := samsung
 
 PRODUCT_GMS_CLIENTID_BASE := android-samsung

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-LOCAL_PATH := device/samsung/a14
+LOCAL_PATH := device/samsung/a13
 
 # Dynamic partitions
 PRODUCT_USE_DYNAMIC_PARTITIONS := true
