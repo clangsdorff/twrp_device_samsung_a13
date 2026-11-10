@@ -90,6 +90,11 @@ while [ "${n}" -lt 60 ]; do
 done
 
 vendor_mount
+if ! vendor_is_a14; then
+    echo "vendor is not A14, skipping decryption"
+    umount /vendor 2>/dev/null
+    return 1
+fi
 missing=""
 for b in ${VENDOR_BINS}; do
     [ -e "${b}" ] || [ -e "${b}.samsung" ] || missing="${missing} ${b}"
