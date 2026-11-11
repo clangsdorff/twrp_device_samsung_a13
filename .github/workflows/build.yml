@@ -213,6 +213,24 @@ jobs:
           '
           grep -n '"zstd":' "$WORKDIR/build/soong/ui/build/paths/config.go"
 
+      # res/images holds the AOSP recovery UI art (~4 MB of png), TWRP draws from /twres
+      - name: Drop AOSP recovery images
+        run: |
+          set -euo pipefail
+          python3 - "$WORKDIR/build/make/core/Makefile" <<'EOF'
+          import sys
+          path = sys.argv[1]
+          c = open(path).read()
+          old_res = "\tcp -rf $(recovery_resources_common)/* $(TARGET_RECOVERY_ROOT_OUT)/res\n"
+          old_txt = ("\t$(foreach recovery_text_file,$(generated_recovery_text_files), \\\n"
+                     "\t  cp -rf $(recovery_text_file) $(TARGET_RECOVERY_ROOT_OUT)/res/images/ &&) true\n")
+          if old_res in c:
+              assert old_txt in c
+              c = c.replace(old_res, "\tmkdir -p $(TARGET_RECOVERY_ROOT_OUT)/res/images\n").replace(old_txt, "")
+              open(path, "w").write(c)
+          EOF
+          grep -n 'mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/res/images' "$WORKDIR/build/make/core/Makefile"
+
       # ---------------------------------------------------------------- build
       - name: Build recovery image
         working-directory: ${{ env.WORKDIR }}
