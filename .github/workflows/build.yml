@@ -77,8 +77,8 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq \
+          sudo apt-get update -qq || (sleep 5; sudo apt-get update -qq)
+          sudo apt-get install -y -qq --fix-missing \
             bc bison build-essential ccache curl flex g++-multilib gcc-multilib git git-lfs \
             gnupg gperf imagemagick lib32readline-dev lib32z1-dev libelf-dev liblz4-tool lz4 \
             libncurses5 libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync \
@@ -207,7 +207,7 @@ jobs:
           with open(path, "r") as f:
               c = f.read()
           if "\"zstd\":" not in c:
-              c = re.sub(r"\"gzip\":\s*Allowed,", "\"gzip\": Allowed,\n\t\"zstd\": Allowed,", c)
+              c = re.sub(r"var Configuration = map\[string\]PathConfig\{", "var Configuration = map[string]PathConfig{\n\t\"zstd\": Allowed,", c)
               with open(path, "w") as f:
                   f.write(c)
           '
