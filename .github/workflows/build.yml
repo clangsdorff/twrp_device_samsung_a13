@@ -195,18 +195,30 @@ jobs:
           done
 
       - name: Configure zstd ramdisk compression
-        working-directory: ${{ env.WORKDIR }}/build/make
         run: |
           set -euo pipefail
           # A13 recovery partition is only ~53 MB. zstd -19 fits kernel + ramdisk comfortably.
-          sed -i 's|\$(LZ4) -l -12 --favor-decSpeed|zstd -19 -T0|g' core/Makefile
-          grep -n "zstd -19 -T0" core/Makefile
+          sed -i 's|\$(LZ4) -l -12 --favor-decSpeed|zstd -19 -T0|g' "$WORKDIR/build/make/core/Makefile"
+          grep -n "zstd -19 -T0" "$WORKDIR/build/make/core/Makefile"
+          # Allow host zstd in Soong build sandbox
+          python3 -c '
+          import re
+          path = "'"$WORKDIR"'/build/soong/ui/build/paths/config.go"
+          with open(path, "r") as f:
+              c = f.read()
+          if "\"zstd\":" not in c:
+              c = re.sub(r"\"gzip\":\s*Allowed,", "\"gzip\": Allowed,\n\t\"zstd\": Allowed,", c)
+              with open(path, "w") as f:
+                  f.write(c)
+          '
+          grep -n '"zstd":' "$WORKDIR/build/soong/ui/build/paths/config.go"
 
       # ---------------------------------------------------------------- build
       - name: Build recovery image
         working-directory: ${{ env.WORKDIR }}
         run: |
           set -eo pipefail
+          export TEMPORARY_DISABLE_PATH_RESTRICTIONS=true
           export USE_CCACHE=1
           export CCACHE_EXEC="$(command -v ccache)"
           export CCACHE_COMPRESS=1
