@@ -1,0 +1,31 @@
+From 3e07a4635b4a1c74dfb53c7848b6769253085a97 Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Wed, 11 Nov 2026 22:42:23 +0300
+Subject: [PATCH] prebuilt: copy only the terminfo entries nano needs
+
+nano_twrp copies the whole ncurses terminfo database, 11 MB that
+pushes recovery.img past the a13 recovery partition. Copy only the
+terminals the recovery console and adb shell report.
+---
+ prebuilt/Android.mk | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/prebuilt/Android.mk b/prebuilt/Android.mk
+index 3197ec1..778eb9d 100755
+--- a/prebuilt/Android.mk
++++ b/prebuilt/Android.mk
+@@ -557,7 +557,10 @@ LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)/system/bin
+ LOCAL_REQUIRED_MODULES := nano libncurses
+ LOCAL_POST_INSTALL_CMD += \
+     cp -rf $(TARGET_OUT_SYSTEM_EXT_ETC)/nano $(TARGET_RECOVERY_ROOT_OUT)/system/etc/; \
+-    cp -rf external/libncurses/lib/terminfo $(TARGET_RECOVERY_ROOT_OUT)/system/etc/;
++    for t in d/dumb l/linux s/screen v/vt100 x/xterm x/xterm-256color; do \
++        mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system/etc/terminfo/$$(dirname $$t); \
++        cp -f external/libncurses/lib/terminfo/$$t $(TARGET_RECOVERY_ROOT_OUT)/system/etc/terminfo/$$t; \
++    done;
+ include $(BUILD_PHONY_PACKAGE)
+ 
+ ifneq ($(TW_EXCLUDE_BASH), true)
+-- 
+2.56.0
+

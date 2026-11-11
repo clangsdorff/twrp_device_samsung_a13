@@ -74,3 +74,6 @@ fails if one no longer applies.
   mounts it again and every size after the flash reads 0. `Mount` now tells a
   stale bind from a mounted `/data`, mounts `/data` writable and replaces the
   bind only after that, since the old bind is what keeps the fscrypt keys.
+- **0012**: `nano_twrp` copies the whole ncurses terminfo database, about
+  11 MB, which pushes `recovery.img` past the recovery partition. The patch
+  copies only `dumb`, `linux`, `screen`, `vt100`, `xterm` and `xterm-256color`.
