@@ -30,6 +30,7 @@ BOOT_MAGIC = b"ANDROID!"
 LZ4_LEGACY_MAGIC = b"\x02\x21\x4c\x18"
 GZIP_MAGIC = b"\x1f\x8b"
 ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+DT_TABLE_MAGIC = b"\xd7\xb7\xab\x1e"
 
 # Modules not needed in recovery that blow past the ~53 MB partition size.
 # Camera, GPU 3D, video codecs, Wi-Fi, BT, audio, cellular/GPS, PC gamepads/drawing tablets, debug dumps.
@@ -165,8 +166,12 @@ def main():
 
     if args.dtbo and os.path.exists(args.dtbo):
         with open(args.dtbo, "rb") as f:
-            write_file(os.path.join(device_dir, "prebuilt", "dtbo.img"), f.read())
-        print(f"dtbo: from {args.dtbo}")
+            dtbo = f.read()
+        # release dtbo.img is padded to the 8 MB partition; keep only the DT table
+        if dtbo[:4] == DT_TABLE_MAGIC:
+            dtbo = dtbo[:struct.unpack_from(">I", dtbo, 4)[0]]
+        write_file(os.path.join(device_dir, "prebuilt", "dtbo.img"), dtbo)
+        print(f"dtbo: from {args.dtbo} ({len(dtbo)} bytes)")
     elif recovery_dtbo:
         write_file(os.path.join(device_dir, "prebuilt", "dtbo.img"), recovery_dtbo)
         print(f"dtbo: from boot.img recovery_dtbo ({len(recovery_dtbo)} bytes)")
