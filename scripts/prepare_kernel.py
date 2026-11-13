@@ -48,6 +48,32 @@ RECOVERY_MODULE_EXCLUDE_PREFIXES = (
 )
 
 
+def parse_modules_dep(content):
+    """Return {module_basename: [dep_basename, ...]} from modules.dep."""
+    deps = {}
+    for line in content.decode(errors="replace").splitlines():
+        line = line.strip()
+        if not line or ":" not in line:
+            continue
+        target, rest = line.split(":", 1)
+        deps[os.path.basename(target.strip())] = [
+            os.path.basename(d) for d in rest.split() if d.strip()
+        ]
+    return deps
+
+
+def filter_modules_dep(content, keep):
+    lines = []
+    for line in content.decode(errors="replace").splitlines():
+        stripped = line.strip()
+        if not stripped or ":" not in stripped:
+            continue
+        target = stripped.split(":", 1)[0].strip()
+        if os.path.basename(target) in keep:
+            lines.append(stripped)
+    return ("\n".join(lines) + "\n").encode() if lines else b""
+
+
 def should_exclude_module(filename):
     for prefix in RECOVERY_MODULE_EXCLUDE_PREFIXES:
         if filename == prefix or filename.startswith(prefix):
@@ -176,7 +202,7 @@ def main():
         write_file(os.path.join(device_dir, "prebuilt", "dtbo.img"), recovery_dtbo)
         print(f"dtbo: from boot.img recovery_dtbo ({len(recovery_dtbo)} bytes)")
 
-    modules = 0
+    module_files = {}
     firmware = 0
     if ramdisk:
         raw_ramdisk = decompress(ramdisk)
@@ -186,24 +212,50 @@ def main():
             # A13 ramdisk has lib/modules/* and lib/firmware/*
             if path.startswith("lib/modules/") or path.startswith("first_stage_ramdisk/lib/modules/"):
                 rel_path = path if path.startswith("lib/modules/") else path[len("first_stage_ramdisk/"):]
-                filename = os.path.basename(rel_path)
-                if filename.endswith(".ko") and should_exclude_module(filename):
-                    continue
-                write_file(os.path.join(root, rel_path), content)
-                modules += rel_path.endswith(".ko")
+                module_files[rel_path] = content
             elif path.startswith("lib/firmware/"):
                 # copy firmware to vendor/firmware in recovery ramdisk
                 rel = path[len("lib/firmware/"):]
                 write_file(os.path.join(firmware_dir, rel), content)
                 firmware += 1
 
+    deps_raw = module_files.get("lib/modules/modules.dep", b"")
+    deps_map = parse_modules_dep(deps_raw) if deps_raw else {}
+
+    keep = {
+        os.path.basename(p)
+        for p in module_files
+        if p.endswith(".ko") and not should_exclude_module(os.path.basename(p))
+    }
+    # Keep transitive dependencies of kept modules (e.g. cmupmucal -> sec_debug_extra_info)
+    queue = list(keep)
+    while queue:
+        mod = queue.pop()
+        for dep in deps_map.get(mod, ()):
+            if dep not in keep:
+                keep.add(dep)
+                queue.append(dep)
+
+    modules = 0
+    for rel_path, content in module_files.items():
+        filename = os.path.basename(rel_path)
+        if rel_path.endswith(".ko") and filename not in keep:
+            continue
+        if rel_path == "lib/modules/modules.dep":
+            content = filter_modules_dep(content, keep)
+        write_file(os.path.join(root, rel_path), content)
+        modules += rel_path.endswith(".ko")
+
     load = os.path.join(modules_dir, "modules.load")
     if modules and os.path.exists(load):
         with open(load, "r") as f:
             lines = [line.strip() for line in f if line.strip()]
-        filtered = [l for l in lines if not should_exclude_module(l)]
+        filtered = [l for l in lines if os.path.basename(l) in keep]
+        load_text = "\n".join(filtered) + "\n"
+        with open(load, "w") as f:
+            f.write(load_text)
         with open(os.path.join(modules_dir, "modules.load.recovery"), "w") as f:
-            f.write("\n".join(filtered) + "\n")
+            f.write(load_text)
     print(f"modules: {modules}, firmware files: {firmware}")
 
 
