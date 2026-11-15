@@ -1,3 +1,13 @@
+From 320f6428009b21d5a3b6808227b12e434022f41e Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Fri, 30 Oct 2026 19:30:32 +0300
+Subject: [PATCH 11/11] partition: handle stale /sdcard bind mount when remounting /data
+
+If an updater unmounts /data without unmounting /sdcard, Is_Mounted
+treats /data as mounted and skips remounting it. Detect the stale bind
+by comparing device IDs, remount /data read-write first to retain
+fscrypt keys, then replace the bind mount.
+---
 diff --git a/partition.cpp b/partition.cpp
 index a912afa..b262309 100644
 --- a/partition.cpp
@@ -32,3 +42,5 @@ index a912afa..b262309 100644
  		if (!Bind_Mount(false))
  			return false;
  	}
+-- 
+2.56.0

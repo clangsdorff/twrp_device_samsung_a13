@@ -1,3 +1,14 @@
+From 735672c9cf49c1af3f6597cf87ac8ae25b5df4ab Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Thu, 24 Sep 2026 19:40:20 +0300
+Subject: [PATCH 03/11] partition: point /data at the decrypted userdata mapper
+
+Find_Actual_Block_Device resolves /data to the raw userdata partition,
+which stays ciphertext under metadata encryption. Once
+langsdorff_decrypt creates /dev/block/mapper/userdata, make every mount
+of /data use that device.
+---
+
 --- a/partition.cpp
 +++ b/partition.cpp
 @@ -3199,6 +3199,11 @@
@@ -12,3 +23,5 @@
  	} else if (Is_Decrypted && !Decrypted_Block_Device.empty()) {
  		Actual_Block_Device = Decrypted_Block_Device;
  		if (TWFunc::Path_Exists(Decrypted_Block_Device)) {
+-- 
+2.56.0

@@ -1,3 +1,15 @@
+From 7c1f597b28b25c3dbbbc245a505eb0bf503170d5 Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Fri, 2 Oct 2026 00:58:46 +0300
+Subject: [PATCH 01/11] gui: pass the decryption credential through the environment
+
+GUIAction::decrypt goes through Decrypt_Device, which falls into the FDE
+path here because the 12.1 fscrypt code expects a keymaster 4 HIDL HAL
+while the firmware only has KeyMint AIDL. Hand the typed credential to
+decrypt_user.sh via TW_CRYPTO_PASSWORD so Exec_Cmd does not log or
+display it.
+---
+
 --- a/gui/action.cpp
 +++ b/gui/action.cpp
 @@ -2071,27 +2071,14 @@
@@ -34,3 +46,5 @@
  
  		if (op_status != 0)
  			op_status = 1;
+-- 
+2.56.0

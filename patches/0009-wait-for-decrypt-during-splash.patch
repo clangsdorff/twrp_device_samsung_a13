@@ -1,3 +1,14 @@
+From b389384970469a27837ac35c443ae4e857293ae9 Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Sat, 17 Oct 2026 16:16:19 +0300
+Subject: [PATCH 09/11] partitionmanager: coordinate metadata decrypt during splash
+
+Avoid vold's 30 s keystore2 timeout during splash by signaling
+decrypt.sh once /vendor is ready, waiting for it to finish, mounting
+/data from the mapper, and setting encryption state from the installed
+fscrypt keys rather than existing directories.
+---
+
 --- a/partitionmanager.cpp
 +++ b/partitionmanager.cpp
 @@ -588,6 +588,26 @@ void TWPartitionManager::Decrypt_Data() {
@@ -27,3 +38,5 @@
  		TWPartition* Key_Directory_Partition = Find_Partition_By_Path(Decrypt_Data->Key_Directory);
  		if (Key_Directory_Partition != nullptr)
  			if (!Key_Directory_Partition->Is_Mounted())
+-- 
+2.56.0

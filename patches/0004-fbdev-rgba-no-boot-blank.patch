@@ -1,3 +1,14 @@
+From b34960df59bcc2362aadb96884fab81f8e1e17fd Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Thu, 24 Sep 2026 21:30:00 +0300
+Subject: [PATCH 04/11] minui: render RGBA directly and skip the fbdev powerdown blank
+
+DECON scans fb0 out as RGBA regardless of the reported offsets, so the
+RECOVERY_BGRA swap leaves partially redrawn regions swapped. Render RGBA
+directly and drop the initial fbdev powerdown blank, which stalls
+unblanking for ~10 s on the NVT touch self test.
+---
+
 --- a/minuitwrp/graphics_fbdev.cpp
 +++ b/minuitwrp/graphics_fbdev.cpp
 @@ -209,7 +209,11 @@
@@ -23,3 +34,5 @@
      fbdev_blank(backend, false);
  
      smem_len = fi.smem_len;
+-- 
+2.56.0

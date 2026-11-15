@@ -1,3 +1,13 @@
+From 38e58f2deaa59ecea10f30fde45fec7f7025d82a Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Fri, 2 Oct 2026 01:07:20 +0300
+Subject: [PATCH 08/11] partition: support resizing and flashing logical super partitions
+
+Allow flashing raw or sparse images to logical partitions by resizing
+the active slot in super metadata, remapping the partition writable, and
+returning simg2img's exit status. Reject empty or malformed sparse
+images before updating metadata.
+---
 diff --git a/partition.cpp b/partition.cpp
 index 184cb16..e4eea85 100755
 --- a/partition.cpp
@@ -144,3 +154,5 @@ index 843dfe5..2267654 100755
  	std::string Get_Super_Partition();										  // Get Super Partition block device path
  	void Setup_Super_Devices();												  // Setup logical dm devices on super partition
  	bool Get_Super_Status();												  // Return whether device has a super partition
+-- 
+2.56.0

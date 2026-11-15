@@ -1,3 +1,14 @@
+From 4a44f7e72ea60d2990cc969b665ba79a46ae6dd2 Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Thu, 24 Sep 2026 22:17:34 +0300
+Subject: [PATCH 05/11] partition: release dm-default-key userdata before formatting /data
+
+Format Data runs make_f2fs on Find_Actual_Block_Device, which returns
+the mapped dm-default-key device still mounted at the decrypt anchor.
+Run data_release.sh first so the raw userdata partition is formatted
+cleanly.
+---
+
 --- a/partition.cpp
 +++ b/partition.cpp
 @@ -2161,6 +2161,11 @@
@@ -12,3 +23,5 @@
  	Find_Actual_Block_Device();
  	if (!Is_Present) {
  		LOGINFO("Block device not present, cannot format %s.\n", Display_Name.c_str());
+-- 
+2.56.0

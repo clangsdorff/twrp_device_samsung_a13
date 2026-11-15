@@ -1,3 +1,14 @@
+From 1c8cb12c5a6992062add0e4adf8553bd7f3a6c67 Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Fri, 25 Sep 2026 00:58:48 +0300
+Subject: [PATCH 07/11] partition: switch internal storage to /data/media/0 on mount
+
+Setup_Data_Media runs before decrypt.sh mounts metadata-encrypted /data
+and falls back to /data/media, exposing user 0 files under /sdcard/0.
+Move Storage_Path to /data/media/0 on the first mount that sees it and
+replace any existing MTP storage with the same ID.
+---
+
 --- a/partition.cpp
 +++ b/partition.cpp
 @@ -1718,10 +1718,25 @@
@@ -37,3 +48,5 @@
  					bool removable = false;
  					MtpStorage* storage = new MtpStorage(mtp_message.storage_id, &mtp_message.path[0], &mtp_message.display[0], removable, mtp_message.maxFileSize, refserver);
  					server->addStorage(storage);
+-- 
+2.56.0

@@ -1,3 +1,14 @@
+From cb1db8cac7280b331a473b5b3e1362a4e71404f9 Mon Sep 17 00:00:00 2001
+From: Langsdorff <131063968+clangsdorff@users.noreply.github.com>
+Date: Fri, 25 Sep 2026 00:10:21 +0300
+Subject: [PATCH 06/11] mtp: reopen control endpoint immediately after session ends
+
+When the USB gadget is unbound, MtpServer::run() leaves ep0 closed and
+reopens it only when the next run() fails after rebinding, causing the
+kernel to reset the no_disconnect=1 gadget. Reopen ep0 and rewrite
+descriptors as soon as run() finishes.
+---
+
 --- a/mtp/ffs/MtpServer.cpp
 +++ b/mtp/ffs/MtpServer.cpp
 @@ -164,19 +164,23 @@
@@ -54,3 +65,5 @@
  
  	void				sendObjectAdded(MtpObjectHandle handle);
  	void				sendObjectRemoved(MtpObjectHandle handle);
+-- 
+2.56.0
