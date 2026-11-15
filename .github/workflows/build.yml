@@ -290,9 +290,7 @@ jobs:
           mkdir -p "$WORKDIR/dist"
           cp recovery.img "$WORKDIR/dist/$NAME.img"
           # Odin: a plain tar with recovery.img, md5 appended (.tar.md5)
-          VBMETA_ARG=""
-          [ -f "$KERNEL_DIR/vbmeta.img" ] && VBMETA_ARG="-C $KERNEL_DIR vbmeta.img"
-          tar -H ustar -cf "$WORKDIR/dist/$NAME.tar" recovery.img ${VBMETA_ARG}
+          tar -H ustar -cf "$WORKDIR/dist/$NAME.tar" recovery.img
           ( cd "$WORKDIR/dist" && md5sum -t "$NAME.tar" >> "$NAME.tar" && mv "$NAME.tar" "$NAME.tar.md5" )
           ( cd "$WORKDIR/dist" && sha256sum * > SHA256SUMS )
           ls -la "$WORKDIR/dist"
