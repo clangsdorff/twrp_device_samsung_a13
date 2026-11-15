@@ -39,7 +39,8 @@ permissive `p` build.
 
 ## Decryption
 
-The recovery carries the Android 15/KeyMint TEE stack in `/system/tee`.
+The recovery mounts the installed ROM's `system` and `vendor` and runs the
+security stack using the ROM's own linker and system libraries.
 
 - **A14 vendor:** when an A14 port vendor is installed, the AIDL KeyMint and
   Gatekeeper stack is brought up, and `langsdorff_decrypt` unlocks metadata, DE
