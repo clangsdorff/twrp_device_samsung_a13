@@ -14,11 +14,11 @@ TWRP 3.7.1 (`twrp-12.1`) device tree for the Galaxy A13 4G, built with
 
 ## Status
 
-- [ ] Boots
-- [ ] Touch, display, brightness
-- [ ] ADB / MTP
-- [ ] Backup / restore
-- [ ] Decryption: active when booted with an A14 vendor, disabled on stock A13 vendor
+- [x] Boots
+- [x] Touch, display, brightness
+- [x] ADB / MTP
+- [x] Backup / restore
+- [x] Decryption: active when booted with an A14 vendor, disabled on stock A13 vendor
 
 ## How it works
 
